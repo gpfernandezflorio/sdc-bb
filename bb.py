@@ -5,8 +5,11 @@ title = "Busqueda Binaria: El Juego!"
 question = "Donde esta el conejo?"
 background_file = "bg.jpg"
 win_file = "win.jpg"
+lost_files = ["go1.jpg","go2.jpg","go3.png","go4.jpg","go5.jpg","go6.png","go7.jpg","go8.jpg"]
 life_file = "life.png"
 life_empty_file = "life-empty.png"
+positives = ["Vas por buen camino","Eso! segui asi","A este paso lo vas a encontrar en seguida","Muy buena elecccion"]
+negatives = ["Vas directo a una trampa","Lo veo dificil","Estas dando vueltas en circulos","Estas desperdiciando tus vidas"]
 difficulty = 10
 
 def update_view():
@@ -17,6 +20,7 @@ def update_view():
 	screen.blit(min_label, (w/50, h/2))
 	screen.blit(max_label, (w-w/50-max_label.get_rect().w, h/2))
 	screen.blit(message_label, (w/2-message_label.get_rect().w/2, 8*h/10))
+	screen.blit(message_2_label, (w/2-message_2_label.get_rect().w/2, 8*h/10+message_label.get_rect().h+5))
 	screen.blit(instructions_label, (w/2-instructions_label.get_rect().w/2, 4*h/10))
 	screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
 	screen.blit(restart_label, (0, h-2*(quit_label.get_rect().h+5)))
@@ -31,10 +35,15 @@ def update_view():
 	pygame.display.update()
 
 def message(s):
-	global message_label
-	message_label = font3.render("  " + s + "  ", True, (255,0,0), (50,50,50))
+	messages("  " + s + "  ","")
+
+def messages(s1,s2):
+	global message_label, message_2_label
+	message_label = font3.render(s1, True, (255,0,0), (50,50,50))
+	message_2_label = font3.render(s2, True, (255,0,0), (50,50,50))
 	update_view()
 	message_label = font3.render("", False, (0,0,0))
+	message_2_label = font3.render("", False, (0,0,0))
 
 def enter():
 	global _input, input_label, medio, lifes
@@ -71,32 +80,32 @@ def enter():
 					lifes = lifes-1
 					if x == medio:
 						if m:
-							por_abajo(x)
+							por_abajo(x, random.choice(positives))
 						else:
-							por_arriba(x)
+							por_arriba(x, random.choice(positives))
 					elif x > medio:
-						por_abajo(x)
+						por_abajo(x, random.choice(negatives))
 					elif x < medio:
-						por_arriba(x)
+						por_arriba(x, random.choice(negatives))
 					else:
 						message("FATAL ERROR! 0x03")
 					medio = min_val + int((max_val - min_val)/2)
 
-def por_arriba(x):
+def por_arriba(x,s):
 	global min_val, min_label, instructions_label
 	min_val = x+1
 	min_label = font2.render(str(min_val-1) + " -", True, (0,0,0))
 	instructions_label = font3.render("Ingrese un numero entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
 	update_view()
-	message("Por arriba de " + str(x))
+	messages("  Por arriba de " + str(x) + "  ","  " + s + "  ")
 
-def por_abajo(x):
+def por_abajo(x,s):
 	global max_val, max_label, instructions_label
 	max_val = x-1
 	max_label = font2.render("- " + str(max_val+1), True, (0,0,0))
 	instructions_label = font3.render("Ingrese un numero entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
 	update_view()
-	message("Por abajo de " + str(x))
+	messages("  Por abajo de " + str(x) + "  ","  " + s + "  ")
 
 def won():
 	global end
@@ -111,7 +120,7 @@ def won():
 def lost(x):
 	global end, message_label
 	end = True
-	lost_file = random.choice(["go1.jpg","go2.jpg","go3.png","go4.jpg","go5.jpg","go6.png","go7.jpg","go8.jpg"])
+	lost_file = random.choice(lost_files)
 	lost_image = pygame.image.load(lost_file).convert()
 	screen.fill((0,0,0))
 	r = lost_image.get_rect()
@@ -192,6 +201,7 @@ if __name__ == '__main__':
 
 	font3 = pygame.font.SysFont("monospace", w/50, True)
 	message_label = font3.render("", True, (255,0,0), (50,50,50))
+	message_2_label = font3.render("", True, (255,0,0), (50,50,50))
 	instructions_label = font3.render("Ingrese un numero entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
 
 	font4 = pygame.font.SysFont("monospace", w/60, True)
