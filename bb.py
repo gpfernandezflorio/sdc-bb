@@ -1,15 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys, math, random, pygame
 from pygame.locals import *
 
-title = "Busqueda Binaria: El Juego!"
-question = "Donde esta el conejo?"
+title = u"Busqueda Binaria: El Juego!"
+question = u"Dónde está el conejo?"
 background_file = "bg.jpg"
 win_file = "win.jpg"
 lost_files = ["go1.jpg","go2.jpg","go3.png","go4.jpg","go5.jpg","go6.png","go7.jpg","go8.jpg"]
 life_file = "life.png"
 life_empty_file = "life-empty.png"
-positives = ["Vas por buen camino","Eso! segui asi","A este paso lo vas a encontrar en seguida","Muy buena elecccion"]
-negatives = ["Vas directo a una trampa","Lo veo dificil","Estas dando vueltas en circulos","Estas desperdiciando tus vidas"]
+positives = [u"Vas por buen camino",u"Eso! seguí así",u"A este paso lo vas a encontrar en seguida",u"Muy buena eleccción"]
+negatives = [u"Vas directo a una trampa",u"Lo veo difícil",u"Estas dando vueltas en círculos",u"Estas desperdiciando tus vidas"]
 difficulty = 10
 
 def update_view():
@@ -48,7 +51,7 @@ def messages(s1,s2):
 def enter():
 	global _input, input_label, medio, lifes
 	if _input == "":
-		message("No se ha ingresado ningun numero")
+		message(u"No se ha ingresado ningún número")
 	else:
 		x = int(_input)
 		_input = ""
@@ -95,7 +98,7 @@ def por_arriba(x,s):
 	global min_val, min_label, instructions_label
 	min_val = x+1
 	min_label = font2.render(str(min_val-1) + " -", True, (0,0,0))
-	instructions_label = font3.render("Ingrese un numero entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
+	instructions_label = font3.render(u"Ingrese un número entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
 	update_view()
 	messages("  Por arriba de " + str(x) + "  ","  " + s + "  ")
 
@@ -103,7 +106,7 @@ def por_abajo(x,s):
 	global max_val, max_label, instructions_label
 	max_val = x-1
 	max_label = font2.render("- " + str(max_val+1), True, (0,0,0))
-	instructions_label = font3.render("Ingrese un numero entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
+	instructions_label = font3.render(u"Ingrese un número entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
 	update_view()
 	messages("  Por abajo de " + str(x) + "  ","  " + s + "  ")
 
@@ -144,7 +147,7 @@ def restart():
 	medio = min_val + int((max_val - min_val)/2)
 	min_label = font2.render(str(min_val-1) + " -", True, (0,0,0))
 	max_label = font2.render("- " + str(max_val+1), True, (0,0,0))
-	instructions_label = font3.render("Ingrese un numero entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
+	instructions_label = font3.render(u"Ingrese un número entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
 	_input = ""
 	input_label = font2.render("?", True, (0,0,0))
 	update_view()
@@ -202,10 +205,10 @@ if __name__ == '__main__':
 	font3 = pygame.font.SysFont("monospace", w/50, True)
 	message_label = font3.render("", True, (255,0,0), (50,50,50))
 	message_2_label = font3.render("", True, (255,0,0), (50,50,50))
-	instructions_label = font3.render("Ingrese un numero entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
+	instructions_label = font3.render(u"Ingrese un número entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
 
 	font4 = pygame.font.SysFont("monospace", w/60, True)
-	end_label = font4.render("SdC-2016 all rights reserved  ", True, (255,255,255))
+	end_label = font4.render(u"Exactas - Departamento de Computación  ", True, (255,255,255))
 	quit_label = font4.render("  Esc: Salir", True, (255,255,255))
 	restart_label = font4.render("  Supr: Reiniciar", True, (255,255,255))
 	quit_label_w = font4.render("  Esc: Salir", True, (0,0,0))
