@@ -6,11 +6,17 @@ from pygame.locals import *
 
 title = u"Búsqueda Binaria: El Juego!"
 question = u"¿Dónde está el conejo?"
+
 background_file = "bg.jpg"
-win_file = "win.jpg"
+win_file = "win.png"
 lost_files = ["go1.jpg","go2.jpg","go3.png","go4.jpg","go5.jpg","go6.png","go7.jpg","go8.jpg"]
 life_file = "life.png"
 life_empty_file = "life-empty.png"
+hand_file = "hand.png"
+sign_file = "sign.png"
+jumping_file = "jumping.png"
+win_back_file = "win_back.jpg"
+
 positives = [u"Vas por buen camino",u"Eso! seguí así",u"A este paso lo vas a encontrar en seguida",u"Muy buena eleccción"]
 negatives = [u"Vas directo a una trampa",u"Lo veo difícil",u"Estás dando vueltas en círculos",u"Estás desperdiciando tus vidas"]
 difficulty = 10
@@ -30,14 +36,32 @@ clue_message = u"  Intro: Pista"
 clue = u"Pista: El medio es "
 copy = u"Semana de la Computación "
 
-
 def update_view():
 	screen.blit(background, background.get_rect())
+	x = anim
+	if fliped:
+		x = -anim
+	screen.blit(jumping, (jumping_pos + 2*x*w/2/anim_limit/2,8*math.pow(anim-anim_limit/2,2)))
+	r = life.get_rect()
+	for i in range(difficulty - lifes):
+		screen.blit(life_empty, (w-(i+lifes+1)*(r.w+10),10))
+	for i in range(lifes):
+		screen.blit(life, (w-(i+1)*(r.w+10),10))
+	r = rhand.get_rect()
+	screen.blit(rhand, (w*0.08 + w*0.84*max_val/top,h/2+r.h))
+	screen.blit(lhand, (w*0.08 + w*0.84*min_val/top - r.w,h/2+r.h))
+	screen.blit(min_label, (w*0.08 + w*0.84*min_val/top - min_label.get_rect().w, h/2+2*r.h))
+	screen.blit(max_label, (w*0.08 + w*0.84*max_val/top, h/2+2*r.h))
 	screen.blit(title_label, (w/50, h/10))
 	screen.blit(quest_label, (w/2-quest_label.get_rect().w/2, h/3))
 	screen.blit(input_label, (w/2-input_label.get_rect().w/2, h/2))
-	screen.blit(min_label, (w/50, h/2))
-	screen.blit(max_label, (w-w/50-max_label.get_rect().w, h/2))
+	r = rsign.get_rect()
+	r2 = top_label.get_rect()
+	screen.blit(rsign, (w-r.w, h/2))
+	screen.blit(lsign, (0, h/2))
+	screen.blit(top_label, (w-r.w+(r.w-r2.w)/2, h/2+(r.h-r2.h)/2))
+	r2 = bottom_label.get_rect()
+	screen.blit(bottom_label, ((r.w-r2.w)/2, h/2+(r.h-r2.h)/2))
 	screen.blit(message_label, (w/2-message_label.get_rect().w/2, 8*h/10))
 	screen.blit(message_2_label, (w/2-message_2_label.get_rect().w/2, 8*h/10+message_label.get_rect().h+5))
 	screen.blit(instructions_label, (w/2-instructions_label.get_rect().w/2, 4*h/10))
@@ -48,11 +72,6 @@ def update_view():
 	screen.blit(copy_label, (w-copy_label.get_rect().w-5, h-copy_label.get_rect().h-5))
 	screen.blit(end_label, (w-end_label.get_rect().w-5, h-2*(end_label.get_rect().h+5)))
 	screen.blit(sdc_label, (w-sdc_label.get_rect().w-5, h-3*(sdc_label.get_rect().h+5)))
-	r = life.get_rect()
-	for i in range(difficulty - lifes):
-		screen.blit(life_empty, (w-(i+lifes+1)*(r.w+10),10))
-	for i in range(lifes):
-		screen.blit(life, (w-(i+1)*(r.w+10),10))
 	pygame.display.update()
 
 def error(s):
@@ -66,11 +85,11 @@ def messages(s1,s2,c2=(255,255,255),c1=(255,255,255)):
 	message_label = font3.render(s1, True, c1, (50,50,50))
 	message_2_label = font3.render(s2, True, c2, (50,50,50))
 	update_view()
-	message_label = font3.render("", False, (0,0,0))
-	message_2_label = font3.render("", False, (0,0,0))
 
 def enter():
-	global _input, input_label, medio, lifes
+	global _input, input_label, medio, lifes, message_label, message_2_label
+	message_label = font3.render("", False, (0,0,0))
+	message_2_label = font3.render("", False, (0,0,0))
 	if _input == "":
 		error(err_no_number)
 	else:
@@ -118,7 +137,7 @@ def enter():
 def por_arriba(x,s,c=(255,0,0)):
 	global min_val, min_label, instructions_label
 	min_val = x+1
-	min_label = font2.render(str(min_val-1) + " -", True, (0,0,0))
+	min_label = font2.render(str(min_val), True, (0,0,0))
 	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
 	update_view()
 	messages(over + str(x) + "  ","  " + s + "  ",c)
@@ -126,7 +145,7 @@ def por_arriba(x,s,c=(255,0,0)):
 def por_abajo(x,s,c=(255,0,0)):
 	global max_val, max_label, instructions_label
 	max_val = x-1
-	max_label = font2.render("- " + str(max_val+1), True, (0,0,0))
+	max_label = font2.render(str(max_val), True, (0,0,0))
 	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
 	update_view()
 	messages(below + str(x) + "  ","  " + s + "  ",c)
@@ -135,10 +154,10 @@ def won():
 	global end
 	end = True
 	r = win.get_rect()
-	screen.fill((255,255,255))
-	screen.blit(win, (w/2-r.w/2, h/2-r.h/2))
-	screen.blit(quit_label_w, (0, h-quit_label.get_rect().h-5))
-	screen.blit(reset_label_w, (0, h-2*(quit_label.get_rect().h+5)))
+	screen.blit(win_back, win_back.get_rect())
+	screen.blit(win, (w/3-r.w/2, h/2-r.h/2))
+	screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
+	screen.blit(reset_label, (0, h-2*(quit_label.get_rect().h+5)))
 	pygame.display.update()
 
 def lost(x):
@@ -161,13 +180,17 @@ def lost(x):
 	message_label = font3.render("", False, (0,0,0))
 
 def restart():
-	global end, lifes, _input, input_label, medio, min_val, max_val, min_label, max_label, instructions_label
+	global end, lifes, _input, input_label, medio, min_val, max_val, min_label, max_label, instructions_label, top_label, bottom_label, anim
+	anim = 10
 	lifes = difficulty
+	top = int(math.pow(2, difficulty))-1
 	min_val = 1
-	max_val = int(math.pow(2, difficulty))-1
+	max_val = top
 	medio = min_val + int((max_val - min_val)/2)
-	min_label = font2.render(str(min_val-1) + " -", True, (0,0,0))
-	max_label = font2.render("- " + str(max_val+1), True, (0,0,0))
+	min_label = font2.render(str(min_val), True, (0,0,0))
+	max_label = font2.render(str(max_val), True, (0,0,0))
+	bottom_label = font2.render(str(min_val-1), True, (0,0,0))
+	top_label = font2.render(str(max_val+1), True, (0,0,0))
 	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
 	_input = ""
 	input_label = font2.render("?", True, (0,0,0))
@@ -200,19 +223,28 @@ if __name__ == '__main__':
 	h = infoObject.current_h
 
 	min_val = 1
-	max_val = int(math.pow(2, difficulty))-1
+	top = int(math.pow(2, difficulty))-1
+	max_val = top
 
 	screen = pygame.display.set_mode((w,h), FULLSCREEN)
-	win = pygame.image.load(win_file).convert()
+	win = pygame.image.load(win_file).convert_alpha()
 	r = win.get_rect()
 	if r.w > w or r.h > h:
 		win = pygame.transform.scale(win, (w, h))
+	win_back = pygame.image.load(win_back_file).convert()
+	win_back = pygame.transform.scale(win_back, (w, h))
 	life_image = pygame.image.load(life_file).convert_alpha()
 	life = pygame.transform.scale(life_image, (w/20, w/25))
 	life_empty_image = pygame.image.load(life_empty_file).convert_alpha()
 	life_empty = pygame.transform.scale(life_empty_image, (w/20, w/25))
-	background_image = pygame.image.load(background_file).convert()
-	background = pygame.transform.scale(background_image, (w, h))
+	rsign = pygame.image.load(sign_file).convert_alpha()
+	rsign = pygame.transform.scale(rsign, (w/9, h/9))
+	lsign = pygame.transform.flip(rsign, True, False)
+	rhand = pygame.image.load(hand_file).convert_alpha()
+	rhand = pygame.transform.scale(rhand, (w/9, h/9))
+	lhand = pygame.transform.flip(rhand, True, False)
+	background = pygame.image.load(background_file).convert()
+	background = pygame.transform.scale(background, (w, h))
 
 	font1 = pygame.font.SysFont("monospace", w/25, True)
 	title_label = font1.render(title, True, (0,0,0))
@@ -220,8 +252,10 @@ if __name__ == '__main__':
 	font2 = pygame.font.SysFont("monospace", w/40, True)
 	quest_label = font2.render(question, True, (0,0,0))
 	input_label = font2.render("?", True, (0,0,0))
-	min_label = font2.render(str(min_val-1) + " -", True, (0,0,0))
-	max_label = font2.render("- " + str(max_val+1), True, (0,0,0))
+	min_label = font2.render(str(min_val), True, (0,0,0))
+	max_label = font2.render(str(max_val), True, (0,0,0))
+	bottom_label = font2.render(str(min_val-1), True, (0,0,0))
+	top_label = font2.render(str(max_val+1), True, (0,0,0))
 
 	font3 = pygame.font.SysFont("monospace", w/50, True)
 	message_label = font3.render("", True, (255,0,0), (50,50,50))
@@ -234,19 +268,44 @@ if __name__ == '__main__':
 	copy_label = font4.render(u"(c) ALL RIGHTS RESERVED  ", True, (255,255,255))
 	quit_label = font4.render(quit_message, True, (255,255,255))
 	reset_label = font4.render(reset_message, True, (255,255,255))
-	quit_label_w = font4.render(quit_message, True, (0,0,0))
-	reset_label_w = font4.render(reset_message, True, (0,0,0))
 	diff_label = font4.render(diff_message, True, (255,255,255))
 	clue_label = font4.render(clue_message, True, (255,255,255))
 
 	_input = ""
 	medio = min_val + int((max_val - min_val)/2)
 	lifes = difficulty
+	dead_limit = 200
+	anim_limit = 40
+	jumping_pos = random.randint(-w/3,w/3)
+	anim = 10
+	dead = 0
 	end = False
-	update_view()
+	fliped = False
 
+	jumping_idle = pygame.image.load(jumping_file).convert_alpha()
+	jumping = pygame.transform.rotate(jumping_idle,0)
 
 	while 1:
+		if not end:
+			if anim < anim_limit:
+				anim = anim+1
+				if anim == anim_limit:
+					dead = 0
+				pygame.time.wait(100)
+				if fliped:
+					jumping = pygame.transform.rotate(jumping_idle,6*anim-120)
+				else:
+					jumping = pygame.transform.rotate(jumping_idle,120-6*anim)
+				update_view()
+			else:
+				pygame.time.wait(10)
+				dead = dead + 1
+				if dead == dead_limit:
+					jumping_pos = random.randrange(0,int(w/2))
+					if random.choice([True,False]):
+						fliped = not fliped
+						jumping_idle = pygame.transform.flip(jumping_idle,True,False)
+					anim = 10
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT: sys.exit()
 			elif event.type == pygame.KEYDOWN:
@@ -281,10 +340,12 @@ if __name__ == '__main__':
 						back()
 					elif event.key == pygame.K_KP_PLUS:
 						difficulty = difficulty +1
+						top = int(math.pow(2, difficulty))-1
 						restart()
 					elif event.key == pygame.K_KP_MINUS:
 						if (difficulty > 1):
 							difficulty = difficulty -1
+							top = int(math.pow(2, difficulty))-1
 							restart()
 					elif event.key == pygame.K_KP_ENTER:
 						message(clue + str(medio),(255,255,255))
