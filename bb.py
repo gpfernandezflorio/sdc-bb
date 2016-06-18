@@ -1,19 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, math, random, pygame
+import sys, math, random, pygame, datetime
 from pygame.locals import *
 
-title = u"Busqueda Binaria: El Juego!"
-question = u"Dónde está el conejo?"
+title = u"Búsqueda Binaria: El Juego!"
+question = u"¿Dónde está el conejo?"
 background_file = "bg.jpg"
 win_file = "win.jpg"
 lost_files = ["go1.jpg","go2.jpg","go3.png","go4.jpg","go5.jpg","go6.png","go7.jpg","go8.jpg"]
 life_file = "life.png"
 life_empty_file = "life-empty.png"
 positives = [u"Vas por buen camino",u"Eso! seguí así",u"A este paso lo vas a encontrar en seguida",u"Muy buena eleccción"]
-negatives = [u"Vas directo a una trampa",u"Lo veo difícil",u"Estas dando vueltas en círculos",u"Estas desperdiciando tus vidas"]
+negatives = [u"Vas directo a una trampa",u"Lo veo difícil",u"Estás dando vueltas en círculos",u"Estás desperdiciando tus vidas"]
 difficulty = 10
+
+err_no_number = u"No se ha ingresado ningún número"
+err_bigger = u" es mayor a "
+err_smaller = u" es menor a "
+over = u"  Por arriba de "
+below = u"  Por abajo de "
+it_was = u"  Era "
+instructions = [u"Ingrese un número entre ", u" y ", u", inclusive"]
+end_message = u"Exactas - Departamento de Computación  "
+quit_message = u"  Esc: Salir"
+reset_message = u"  Supr: Reiniciar"
+diff_message = u"  +/-: Cambiar dificultad"
+clue_message = u"  Intro: Pista"
+clue = u"Pista: El medio es "
+copy = u"Semana de la Computación "
+
 
 def update_view():
 	screen.blit(background, background.get_rect())
@@ -26,10 +42,12 @@ def update_view():
 	screen.blit(message_2_label, (w/2-message_2_label.get_rect().w/2, 8*h/10+message_label.get_rect().h+5))
 	screen.blit(instructions_label, (w/2-instructions_label.get_rect().w/2, 4*h/10))
 	screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
-	screen.blit(restart_label, (0, h-2*(quit_label.get_rect().h+5)))
-	screen.blit(diff_label, (0, h-3*(quit_label.get_rect().h+5)))
-	screen.blit(clue_label, (0, h-4*(quit_label.get_rect().h+5)))
-	screen.blit(end_label, (w-end_label.get_rect().w-5, h-end_label.get_rect().h-5))
+	screen.blit(reset_label, (0, h-2*(reset_label.get_rect().h+5)))
+	screen.blit(diff_label, (0, h-3*(diff_label.get_rect().h+5)))
+	screen.blit(clue_label, (0, h-4*(clue_label.get_rect().h+5)))
+	screen.blit(copy_label, (w-copy_label.get_rect().w-5, h-copy_label.get_rect().h-5))
+	screen.blit(end_label, (w-end_label.get_rect().w-5, h-2*(end_label.get_rect().h+5)))
+	screen.blit(sdc_label, (w-sdc_label.get_rect().w-5, h-3*(sdc_label.get_rect().h+5)))
 	r = life.get_rect()
 	for i in range(difficulty - lifes):
 		screen.blit(life_empty, (w-(i+lifes+1)*(r.w+10),10))
@@ -37,13 +55,16 @@ def update_view():
 		screen.blit(life, (w-(i+1)*(r.w+10),10))
 	pygame.display.update()
 
-def message(s):
-	messages("  " + s + "  ","")
+def error(s):
+	message(s,(255,0,0))
 
-def messages(s1,s2):
+def message(s,c=(255,255,255)):
+	messages("  " + s + "  ","",(255,255,255),c)
+
+def messages(s1,s2,c2=(255,255,255),c1=(255,255,255)):
 	global message_label, message_2_label
-	message_label = font3.render(s1, True, (255,0,0), (50,50,50))
-	message_2_label = font3.render(s2, True, (255,0,0), (50,50,50))
+	message_label = font3.render(s1, True, c1, (50,50,50))
+	message_2_label = font3.render(s2, True, c2, (50,50,50))
 	update_view()
 	message_label = font3.render("", False, (0,0,0))
 	message_2_label = font3.render("", False, (0,0,0))
@@ -51,15 +72,15 @@ def messages(s1,s2):
 def enter():
 	global _input, input_label, medio, lifes
 	if _input == "":
-		message(u"No se ha ingresado ningún número")
+		error(err_no_number)
 	else:
 		x = int(_input)
 		_input = ""
 		input_label = font2.render("?", True, (0,0,0))
 		if x > max_val:
-			message(str(x) + " es mayor a " + str(max_val))
+			error(str(x) + err_bigger + str(max_val))
 		elif x < min_val:
-			message(str(x) + " es menor a " + str(min_val))
+			error(str(x) + err_smaller + str(min_val))
 		else:
 #			_input = ""
 #			input_label = font2.render("?", True, (0,0,0))
@@ -67,7 +88,7 @@ def enter():
 				if (x == min_val):
 					won()
 				else:
-					message("FATAL ERROR! 0x01")
+					error("FATAL ERROR! 0x01")
 			else:
 				m = random.choice([True,False])
 				if lifes == 1:
@@ -78,37 +99,37 @@ def enter():
 					elif x < max_val:
 						lost(random.randint(x+1, max_val))
 					else:
-						message("FATAL ERROR! 0x02")
+						error("FATAL ERROR! 0x02")
 				else:
 					lifes = lifes-1
 					if x == medio:
 						if m:
-							por_abajo(x, random.choice(positives))
+							por_abajo(x, random.choice(positives),(0,255,0))
 						else:
-							por_arriba(x, random.choice(positives))
+							por_arriba(x, random.choice(positives),(0,255,0))
 					elif x > medio:
 						por_abajo(x, random.choice(negatives))
 					elif x < medio:
 						por_arriba(x, random.choice(negatives))
 					else:
-						message("FATAL ERROR! 0x03")
+						error("FATAL ERROR! 0x03")
 					medio = min_val + int((max_val - min_val)/2)
 
-def por_arriba(x,s):
+def por_arriba(x,s,c=(255,0,0)):
 	global min_val, min_label, instructions_label
 	min_val = x+1
 	min_label = font2.render(str(min_val-1) + " -", True, (0,0,0))
-	instructions_label = font3.render(u"Ingrese un número entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
+	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
 	update_view()
-	messages("  Por arriba de " + str(x) + "  ","  " + s + "  ")
+	messages(over + str(x) + "  ","  " + s + "  ",c)
 
-def por_abajo(x,s):
+def por_abajo(x,s,c=(255,0,0)):
 	global max_val, max_label, instructions_label
 	max_val = x-1
 	max_label = font2.render("- " + str(max_val+1), True, (0,0,0))
-	instructions_label = font3.render(u"Ingrese un número entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
+	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
 	update_view()
-	messages("  Por abajo de " + str(x) + "  ","  " + s + "  ")
+	messages(below + str(x) + "  ","  " + s + "  ",c)
 
 def won():
 	global end
@@ -117,7 +138,7 @@ def won():
 	screen.fill((255,255,255))
 	screen.blit(win, (w/2-r.w/2, h/2-r.h/2))
 	screen.blit(quit_label_w, (0, h-quit_label.get_rect().h-5))
-	screen.blit(restart_label_w, (0, h-2*(quit_label.get_rect().h+5)))
+	screen.blit(reset_label_w, (0, h-2*(quit_label.get_rect().h+5)))
 	pygame.display.update()
 
 def lost(x):
@@ -132,10 +153,10 @@ def lost(x):
 		screen.blit(lost_image, (0,0))
 	else:
 		screen.blit(lost_image, (w/2-r.w/2, h/2-r.h/2))
-	message_label = font3.render("  Era " + str(x) + "  ", True, (255,0,0), (50,50,50))
+	message_label = font3.render(it_was + str(x) + "  ", True, (255,0,0), (50,50,50))
 	screen.blit(message_label, (w/2-message_label.get_rect().w/2, 8*h/10))
 	screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
-	screen.blit(restart_label, (0, h-2*(quit_label.get_rect().h+5)))
+	screen.blit(reset_label, (0, h-2*(quit_label.get_rect().h+5)))
 	pygame.display.update()
 	message_label = font3.render("", False, (0,0,0))
 
@@ -147,7 +168,7 @@ def restart():
 	medio = min_val + int((max_val - min_val)/2)
 	min_label = font2.render(str(min_val-1) + " -", True, (0,0,0))
 	max_label = font2.render("- " + str(max_val+1), True, (0,0,0))
-	instructions_label = font3.render(u"Ingrese un número entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
+	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
 	_input = ""
 	input_label = font2.render("?", True, (0,0,0))
 	update_view()
@@ -205,16 +226,18 @@ if __name__ == '__main__':
 	font3 = pygame.font.SysFont("monospace", w/50, True)
 	message_label = font3.render("", True, (255,0,0), (50,50,50))
 	message_2_label = font3.render("", True, (255,0,0), (50,50,50))
-	instructions_label = font3.render(u"Ingrese un número entre " + str(min_val) + " y " + str(max_val) + ", inclusive", True, (0,0,0))
+	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
 
 	font4 = pygame.font.SysFont("monospace", w/60, True)
-	end_label = font4.render(u"Exactas - Departamento de Computación  ", True, (255,255,255))
-	quit_label = font4.render("  Esc: Salir", True, (255,255,255))
-	restart_label = font4.render("  Supr: Reiniciar", True, (255,255,255))
-	quit_label_w = font4.render("  Esc: Salir", True, (0,0,0))
-	restart_label_w = font4.render("  Supr: Reiniciar", True, (0,0,0))
-	diff_label = font4.render("  +/-: Cambiar dificultad", True, (255,255,255))
-	clue_label = font4.render("  Intro: Pista", True, (255,255,255))
+	end_label = font4.render(end_message, True, (255,255,255))
+	sdc_label = font4.render(copy + str(datetime.datetime.now().year) + "  ", True, (255,255,255))
+	copy_label = font4.render(u"(c) ALL RIGHTS RESERVED  ", True, (255,255,255))
+	quit_label = font4.render(quit_message, True, (255,255,255))
+	reset_label = font4.render(reset_message, True, (255,255,255))
+	quit_label_w = font4.render(quit_message, True, (0,0,0))
+	reset_label_w = font4.render(reset_message, True, (0,0,0))
+	diff_label = font4.render(diff_message, True, (255,255,255))
+	clue_label = font4.render(clue_message, True, (255,255,255))
 
 	_input = ""
 	medio = min_val + int((max_val - min_val)/2)
@@ -264,4 +287,4 @@ if __name__ == '__main__':
 							difficulty = difficulty -1
 							restart()
 					elif event.key == pygame.K_KP_ENTER:
-						message("Pista: El medio es " + str(medio))
+						message(clue + str(medio),(255,255,255))
