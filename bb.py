@@ -7,6 +7,7 @@ from pygame.locals import *
 title = u"Búsqueda Binaria: El Juego!"
 question = u"¿Dónde está el conejo?"
 
+difficulty = 10
 background_file = "bg.jpg"
 win_file = "win.png"
 lost_files = ["go1.jpg","go2.jpg","go3.png","go4.jpg","go5.jpg","go6.png","go7.jpg","go8.jpg"]
@@ -19,7 +20,6 @@ win_back_file = "win_back.jpg"
 
 positives = [u"Vas por buen camino",u"Eso! seguí así",u"A este paso lo vas a encontrar en seguida",u"Muy buena eleccción"]
 negatives = [u"Vas directo a una trampa",u"Lo veo difícil",u"Estás dando vueltas en círculos",u"Estás desperdiciando tus vidas"]
-difficulty = 10
 
 err_no_number = u"No se ha ingresado ningún número"
 err_bigger = u" es mayor a "
@@ -35,43 +35,46 @@ diff_message = u"  +/-: Cambiar dificultad"
 clue_message = u"  Intro: Pista"
 clue = u"Pista: El medio es "
 copy = u"Semana de la Computación "
+start_message = u"Presione Enter para empezar"
 
 def update_view():
 	screen.blit(background, background.get_rect())
-	x = anim
-	if fliped:
-		x = -anim
-	screen.blit(jumping, (jumping_pos + 2*x*w/2/anim_limit/2,8*math.pow(anim-anim_limit/2,2)))
-	r = life.get_rect()
-	for i in range(difficulty - lifes):
-		screen.blit(life_empty, (w-(i+lifes+1)*(r.w+10),10))
-	for i in range(lifes):
-		screen.blit(life, (w-(i+1)*(r.w+10),10))
-	r = rhand.get_rect()
-	screen.blit(rhand, (w*0.08 + w*0.84*max_val/top,h/2+r.h))
-	screen.blit(lhand, (w*0.08 + w*0.84*min_val/top - r.w,h/2+r.h))
-	screen.blit(min_label, (w*0.08 + w*0.84*min_val/top - min_label.get_rect().w, h/2+2*r.h))
-	screen.blit(max_label, (w*0.08 + w*0.84*max_val/top, h/2+2*r.h))
 	screen.blit(title_label, (w/50, h/10))
-	screen.blit(quest_label, (w/2-quest_label.get_rect().w/2, h/3))
-	screen.blit(input_label, (w/2-input_label.get_rect().w/2, h/2))
-	r = rsign.get_rect()
-	r2 = top_label.get_rect()
-	screen.blit(rsign, (w-r.w, h/2))
-	screen.blit(lsign, (0, h/2))
-	screen.blit(top_label, (w-r.w+(r.w-r2.w)/2, h/2+(r.h-r2.h)/2))
-	r2 = bottom_label.get_rect()
-	screen.blit(bottom_label, ((r.w-r2.w)/2, h/2+(r.h-r2.h)/2))
-	screen.blit(message_label, (w/2-message_label.get_rect().w/2, 8*h/10))
-	screen.blit(message_2_label, (w/2-message_2_label.get_rect().w/2, 8*h/10+message_label.get_rect().h+5))
-	screen.blit(instructions_label, (w/2-instructions_label.get_rect().w/2, 4*h/10))
-	screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
-	screen.blit(reset_label, (0, h-2*(reset_label.get_rect().h+5)))
-	screen.blit(diff_label, (0, h-3*(diff_label.get_rect().h+5)))
-	screen.blit(clue_label, (0, h-4*(clue_label.get_rect().h+5)))
-	screen.blit(copy_label, (w-copy_label.get_rect().w-5, h-copy_label.get_rect().h-5))
-	screen.blit(end_label, (w-end_label.get_rect().w-5, h-2*(end_label.get_rect().h+5)))
-	screen.blit(sdc_label, (w-sdc_label.get_rect().w-5, h-3*(sdc_label.get_rect().h+5)))
+	if (anim <= anim_limit):
+		x = anim
+		if fliped:
+			x = -anim
+		screen.blit(jumping, (jumping_pos + 2*x*w/2/anim_limit/2,h/3+2*math.pow(anim-anim_limit/2,2)))
+		screen.blit(start_label, (w/2 - start_label.get_rect().w/2, h/5+math.pow(anim-anim_limit/2,2)))
+	else:
+		r = life.get_rect()
+		for i in range(difficulty - lifes):
+			screen.blit(life_empty, (w-(i+lifes+1)*(r.w+10),10))
+		for i in range(lifes):
+			screen.blit(life, (w-(i+1)*(r.w+10),10))
+		r = rhand.get_rect()
+		screen.blit(rhand, (w*0.08 + w*0.84*max_val/top,h/2+r.h))
+		screen.blit(lhand, (w*0.08 + w*0.84*min_val/top - r.w,h/2+r.h))
+		screen.blit(min_label, (w*0.08 + w*0.84*min_val/top - min_label.get_rect().w, h/2+2*r.h))
+		screen.blit(max_label, (w*0.08 + w*0.84*max_val/top, h/2+2*r.h))
+		screen.blit(quest_label, (w/2-quest_label.get_rect().w/2, h/3))
+		screen.blit(input_label, (w/2-input_label.get_rect().w/2, h/2))
+		r = rsign.get_rect()
+		r2 = top_label.get_rect()
+		screen.blit(rsign, (w-r.w, h/2))
+		screen.blit(lsign, (0, h/2))
+		screen.blit(top_label, (w-r.w+(r.w-r2.w)/2, h/2+(r.h-r2.h)/2))
+		r2 = bottom_label.get_rect()
+		screen.blit(bottom_label, ((r.w-r2.w)/2, h/2+(r.h-r2.h)/2))
+		screen.blit(message_label, (w/2-message_label.get_rect().w/2, 8*h/10))
+		screen.blit(message_2_label, (w/2-message_2_label.get_rect().w/2, 8*h/10+message_label.get_rect().h+5))
+		screen.blit(instructions_label, (w/2-instructions_label.get_rect().w/2, 4*h/10))
+		screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
+		screen.blit(reset_label, (0, h-2*(reset_label.get_rect().h+5)))
+		screen.blit(diff_label, (0, h-3*(diff_label.get_rect().h+5)))
+		screen.blit(clue_label, (0, h-4*(clue_label.get_rect().h+5)))
+		screen.blit(end_label, (w-end_label.get_rect().w-5, h-end_label.get_rect().h-5))
+		screen.blit(sdc_label, (w-sdc_label.get_rect().w-5, h-2*(end_label.get_rect().h+5)))
 	pygame.display.update()
 
 def error(s):
@@ -181,7 +184,6 @@ def lost(x):
 
 def restart():
 	global end, lifes, _input, input_label, medio, min_val, max_val, min_label, max_label, instructions_label, top_label, bottom_label, anim
-	anim = 10
 	lifes = difficulty
 	top = int(math.pow(2, difficulty))-1
 	min_val = 1
@@ -194,7 +196,7 @@ def restart():
 	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
 	_input = ""
 	input_label = font2.render("?", True, (0,0,0))
-	update_view()
+	anim = 1
 	end = False
 
 def back():
@@ -261,11 +263,11 @@ if __name__ == '__main__':
 	message_label = font3.render("", True, (255,0,0), (50,50,50))
 	message_2_label = font3.render("", True, (255,0,0), (50,50,50))
 	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
+	start_label = font1.render(start_message, True, (240,10,240))
 
 	font4 = pygame.font.SysFont("monospace", w/60, True)
 	end_label = font4.render(end_message, True, (255,255,255))
 	sdc_label = font4.render(copy + str(datetime.datetime.now().year) + "  ", True, (255,255,255))
-	copy_label = font4.render(u"(c) ALL RIGHTS RESERVED  ", True, (255,255,255))
 	quit_label = font4.render(quit_message, True, (255,255,255))
 	reset_label = font4.render(reset_message, True, (255,255,255))
 	diff_label = font4.render(diff_message, True, (255,255,255))
@@ -274,15 +276,16 @@ if __name__ == '__main__':
 	_input = ""
 	medio = min_val + int((max_val - min_val)/2)
 	lifes = difficulty
-	dead_limit = 200
+	dead_limit = 15
 	anim_limit = 40
 	jumping_pos = random.randint(-w/3,w/3)
-	anim = 10
-	dead = 0
+	anim = 1
+	dead = dead_limit
 	end = False
 	fliped = False
 
 	jumping_idle = pygame.image.load(jumping_file).convert_alpha()
+	jumping_idle = pygame.transform.scale(jumping_idle, (w/4,h/3))
 	jumping = pygame.transform.rotate(jumping_idle,0)
 
 	while 1:
@@ -295,7 +298,7 @@ if __name__ == '__main__':
 				if fliped:
 					jumping = pygame.transform.rotate(jumping_idle,6*anim-120)
 				else:
-					jumping = pygame.transform.rotate(jumping_idle,120-6*anim)
+					jumping = pygame.transform.rotate(jumping_idle,100-5*anim)
 				update_view()
 			else:
 				pygame.time.wait(10)
@@ -305,7 +308,7 @@ if __name__ == '__main__':
 					if random.choice([True,False]):
 						fliped = not fliped
 						jumping_idle = pygame.transform.flip(jumping_idle,True,False)
-					anim = 10
+					anim = 1
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT: sys.exit()
 			elif event.type == pygame.KEYDOWN:
@@ -313,6 +316,7 @@ if __name__ == '__main__':
 					sys.exit()
 				elif event.key == pygame.K_DELETE:
 					restart()
+					update_view()
 				elif (not end):
 					if event.key == pygame.K_1:
 						update_input("1")
@@ -335,17 +339,30 @@ if __name__ == '__main__':
 					elif event.key == pygame.K_0:
 						update_input("0")
 					elif event.key == pygame.K_RETURN:
-						enter()
+						if anim <= anim_limit:
+							restart()
+							anim = anim_limit + 1
+							message_label = font3.render("", False, (0,0,0))
+							message_2_label = font3.render("", False, (0,0,0))
+							update_view()
+						else:
+							enter()
 					elif event.key == pygame.K_BACKSPACE:
 						back()
 					elif event.key == pygame.K_KP_PLUS:
-						difficulty = difficulty +1
-						top = int(math.pow(2, difficulty))-1
-						restart()
-					elif event.key == pygame.K_KP_MINUS:
-						if (difficulty > 1):
-							difficulty = difficulty -1
+						if anim > anim_limit:
+							difficulty = difficulty +1
 							top = int(math.pow(2, difficulty))-1
 							restart()
+							anim = anim_limit + 1
+							update_view()
+					elif event.key == pygame.K_KP_MINUS:
+						if anim > anim_limit:
+							if (difficulty > 1):
+								difficulty = difficulty -1
+								top = int(math.pow(2, difficulty))-1
+								restart()
+								anim = anim_limit + 1
+								update_view()
 					elif event.key == pygame.K_KP_ENTER:
 						message(clue + str(medio),(255,255,255))
