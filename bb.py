@@ -4,23 +4,31 @@
 import sys, math, random, pygame, datetime
 from pygame.locals import *
 
+# VERSION
+version = "v1.1"
+
+# DEFAULT
+difficulty = 10
+
+# MOUSE and KEYS
+key_quit = -1#pygame.K_ESCAPE
+mouse_quit = 3
+key_rst = pygame.K_ESCAPE
+key_rst_str = u"Esc"
+key_diff_up = -1#pygame.K_KP_PLUS
+key_diff_dw = -1#pygame.K_KP_MINUS
+mouse_diff_up = 4
+mouse_diff_dw = 5
+key_clue = pygame.K_LCTRL
+mouse_clue = 1
+key_clue_str = u"Ctrl Izq."
+
+# STRINGS
 title = u"Búsqueda Binaria: El Juego!"
 question = u"¿Dónde está el conejo?"
-
-difficulty = 10
-background_file = "bg.jpg"
-win_file = "win.png"
-lost_files = ["go1.jpg","go2.jpg","go3.png","go4.jpg","go5.jpg","go6.png","go7.jpg","go8.jpg"]
-life_file = "life.png"
-life_empty_file = "life-empty.png"
-hand_file = "hand.png"
-sign_file = "sign.png"
-jumping_file = "jumping.png"
-win_back_file = "win_back.jpg"
-
-positives = [u"Vas por buen camino",u"Eso! seguí así",u"A este paso lo vas a encontrar en seguida",u"Muy buena eleccción"]
-negatives = [u"Vas directo a una trampa",u"Lo veo difícil",u"Estás dando vueltas en círculos",u"Estás desperdiciando tus vidas"]
-
+question_d = u"¿Dónde está Dory?"
+positives = [u"Vas por buen camino",u"Eso! seguí así",u"A este paso vas a terminar en seguida",u"Muy buena eleccción",u"Como un campeón",u"Vos sí que sabés",u"Eso es ser inteligente",u"Ya casi, un poco más"]
+negatives = [u"Vas directo a una trampa",u"Lo veo difícil",u"Estás dando vueltas en círculos",u"Estás desperdiciando tus vidas",u"No creo que lo hayas pensado mucho",u"¿En qué estabas pensando?",u"Chau, chau adiós",u"Se te va a escapar",u"Ay, qué lástima!"]
 err_no_number = u"No se ha ingresado ningún número"
 err_bigger = u" es mayor a "
 err_smaller = u" es menor a "
@@ -29,23 +37,43 @@ below = u"  Por abajo de "
 it_was = u"  Era "
 instructions = [u"Ingrese un número entre ", u" y ", u", inclusive"]
 end_message = u"Exactas - Departamento de Computación  "
-quit_message = u"  Esc: Salir"
-reset_message = u"  Supr: Reiniciar"
-diff_message = u"  +/-: Cambiar dificultad"
-clue_message = u"  Intro: Pista"
+reset_message = u"  " + key_rst_str + u": Reiniciar"
+clue_message = u"  " + key_clue_str + u": Pista"
 clue = u"Pista: El medio es "
 copy = u"Semana de la Computación "
 start_message = u"Presione Enter para empezar"
 
+# FILES
+background_file = "bg.jpg"
+background_file_d = "bg_d.png"
+win_file = "win.png"
+lost_files = ["go1.jpg","go2.jpg","go3.png","go4.jpg","go5.jpg","go6.png","go7.jpg","go8.jpg"]
+life_file = "life.png"
+life_empty_file = "life-empty.png"
+hand_file = "hand.png"
+sign_file = "sign.png"
+jumping_file = "jumping.png"
+swiming_file = "swiming.png"
+win_back_file = "win_back.jpg"
+win_back_file_d = "win_back_d.jpg"
+
 def update_view():
-	screen.blit(background, background.get_rect())
-	screen.blit(title_label, (w/50, h/10))
-	if (anim <= anim_limit):
-		x = anim
-		if fliped:
-			x = -anim
-		screen.blit(jumping, (jumping_pos + 2*x*w/2/anim_limit/2,h/3+2*math.pow(anim-anim_limit/2,2)))
+	if scene == "BUNNY":
+		screen.blit(background, background.get_rect())
+	else:
+		screen.blit(background_d, background.get_rect())
+	if anim <= anim_limit:
 		screen.blit(start_label, (w/2 - start_label.get_rect().w/2, h/5+math.pow(anim-anim_limit/2,2)))
+		if scene == "BUNNY":
+			x = anim
+			if fliped:
+				x = -anim
+			screen.blit(jumping, (jumping_pos + 2*x*w/2/anim_limit/2,h/3+2*math.pow(anim-anim_limit/2,2)))
+		else:
+			pos = anim*(w+jumping.get_rect().w)/anim_limit
+			if fliped:
+				pos = w-pos+jumping.get_rect().w
+			screen.blit(jumping, (pos-jumping.get_rect().w,h/6 + jumping_pos + 10000*math.sin(pos/100.0)/w))
 	else:
 		r = life.get_rect()
 		for i in range(difficulty - lifes):
@@ -57,7 +85,10 @@ def update_view():
 		screen.blit(lhand, (w*0.08 + w*0.84*min_val/top - r.w,h/2+r.h))
 		screen.blit(min_label, (w*0.08 + w*0.84*min_val/top - min_label.get_rect().w, h/2+2*r.h))
 		screen.blit(max_label, (w*0.08 + w*0.84*max_val/top, h/2+2*r.h))
-		screen.blit(quest_label, (w/2-quest_label.get_rect().w/2, h/3))
+		if scene == "BUNNY":
+			screen.blit(quest_label, (w/2-quest_label.get_rect().w/2, h/3))
+		else:
+			screen.blit(quest_label_d, (w/2-quest_label.get_rect().w/2, h/3))
 		screen.blit(input_label, (w/2-input_label.get_rect().w/2, h/2))
 		r = rsign.get_rect()
 		r2 = top_label.get_rect()
@@ -69,12 +100,12 @@ def update_view():
 		screen.blit(message_label, (w/2-message_label.get_rect().w/2, 8*h/10))
 		screen.blit(message_2_label, (w/2-message_2_label.get_rect().w/2, 8*h/10+message_label.get_rect().h+5))
 		screen.blit(instructions_label, (w/2-instructions_label.get_rect().w/2, 4*h/10))
-		screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
-		screen.blit(reset_label, (0, h-2*(reset_label.get_rect().h+5)))
-		screen.blit(diff_label, (0, h-3*(diff_label.get_rect().h+5)))
-		screen.blit(clue_label, (0, h-4*(clue_label.get_rect().h+5)))
+		screen.blit(reset_label, (0, h-(reset_label.get_rect().h+5)))
+		screen.blit(clue_label, (0, h-2*(clue_label.get_rect().h+5)))
 		screen.blit(end_label, (w-end_label.get_rect().w-5, h-end_label.get_rect().h-5))
 		screen.blit(sdc_label, (w-sdc_label.get_rect().w-5, h-2*(end_label.get_rect().h+5)))
+	screen.blit(title_label, (w/50, h/10))
+	screen.blit(version_label, (w/50 + title_label.get_rect().w + 10, h/10 + title_label.get_rect().h - 1.5*version_label.get_rect().h))
 	pygame.display.update()
 
 def error(s):
@@ -104,8 +135,6 @@ def enter():
 		elif x < min_val:
 			error(str(x) + err_smaller + str(min_val))
 		else:
-#			_input = ""
-#			input_label = font2.render("?", True, (0,0,0))
 			if (max_val == min_val):
 				if (x == min_val):
 					won()
@@ -157,10 +186,12 @@ def won():
 	global end
 	end = True
 	r = win.get_rect()
-	screen.blit(win_back, win_back.get_rect())
+	if scene == "BUNNY":
+		screen.blit(win_back, win_back.get_rect())
+	else:
+		screen.blit(win_back_d, win_back_d.get_rect())
 	screen.blit(win, (w/3-r.w/2, h/2-r.h/2))
-	screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
-	screen.blit(reset_label, (0, h-2*(quit_label.get_rect().h+5)))
+	screen.blit(reset_label, (0, h-(reset_label.get_rect().h+5)))
 	pygame.display.update()
 
 def lost(x):
@@ -177,13 +208,16 @@ def lost(x):
 		screen.blit(lost_image, (w/2-r.w/2, h/2-r.h/2))
 	message_label = font3.render(it_was + str(x) + "  ", True, (255,0,0), (50,50,50))
 	screen.blit(message_label, (w/2-message_label.get_rect().w/2, 8*h/10))
-	screen.blit(quit_label, (0, h-quit_label.get_rect().h-5))
-	screen.blit(reset_label, (0, h-2*(quit_label.get_rect().h+5)))
+	screen.blit(reset_label, (0, h-(reset_label.get_rect().h+5)))
 	pygame.display.update()
 	message_label = font3.render("", False, (0,0,0))
 
 def restart():
-	global end, lifes, _input, input_label, medio, min_val, max_val, min_label, max_label, instructions_label, top_label, bottom_label, anim
+	global scene, end, lifes, _input, input_label, medio, min_val, max_val, min_label, max_label, instructions_label, top_label, bottom_label, anim, jumping
+	if scene == "BUNNY":
+		jumping = pygame.transform.rotate(jumping_idle,0)
+	else:
+		jumping = pygame.transform.rotate(swiming_idle,0)
 	lifes = difficulty
 	top = int(math.pow(2, difficulty))-1
 	min_val = 1
@@ -235,6 +269,8 @@ if __name__ == '__main__':
 		win = pygame.transform.scale(win, (w, h))
 	win_back = pygame.image.load(win_back_file).convert()
 	win_back = pygame.transform.scale(win_back, (w, h))
+	win_back_d = pygame.image.load(win_back_file_d).convert()
+	win_back_d = pygame.transform.scale(win_back_d, (w, h))
 	life_image = pygame.image.load(life_file).convert_alpha()
 	life = pygame.transform.scale(life_image, (w/20, w/25))
 	life_empty_image = pygame.image.load(life_empty_file).convert_alpha()
@@ -247,12 +283,15 @@ if __name__ == '__main__':
 	lhand = pygame.transform.flip(rhand, True, False)
 	background = pygame.image.load(background_file).convert()
 	background = pygame.transform.scale(background, (w, h))
+	background_d = pygame.image.load(background_file_d).convert()
+	background_d = pygame.transform.scale(background_d, (w, h))
 
 	font1 = pygame.font.SysFont("monospace", w/25, True)
 	title_label = font1.render(title, True, (0,0,0))
 
 	font2 = pygame.font.SysFont("monospace", w/40, True)
 	quest_label = font2.render(question, True, (0,0,0))
+	quest_label_d = font2.render(question_d, True, (0,0,0))
 	input_label = font2.render("?", True, (0,0,0))
 	min_label = font2.render(str(min_val), True, (0,0,0))
 	max_label = font2.render(str(max_val), True, (0,0,0))
@@ -263,15 +302,14 @@ if __name__ == '__main__':
 	message_label = font3.render("", True, (255,0,0), (50,50,50))
 	message_2_label = font3.render("", True, (255,0,0), (50,50,50))
 	instructions_label = font3.render(instructions[0] + str(min_val) + instructions[1] + str(max_val) + instructions[2], True, (0,0,0))
-	start_label = font1.render(start_message, True, (240,10,240))
+	start_label = font1.render(start_message, True, (200,10,40))
 
 	font4 = pygame.font.SysFont("monospace", w/60, True)
 	end_label = font4.render(end_message, True, (255,255,255))
 	sdc_label = font4.render(copy + str(datetime.datetime.now().year) + "  ", True, (255,255,255))
-	quit_label = font4.render(quit_message, True, (255,255,255))
 	reset_label = font4.render(reset_message, True, (255,255,255))
-	diff_label = font4.render(diff_message, True, (255,255,255))
 	clue_label = font4.render(clue_message, True, (255,255,255))
+	version_label = font4.render(version, True, (0,0,0))
 
 	_input = ""
 	medio = min_val + int((max_val - min_val)/2)
@@ -286,7 +324,15 @@ if __name__ == '__main__':
 
 	jumping_idle = pygame.image.load(jumping_file).convert_alpha()
 	jumping_idle = pygame.transform.scale(jumping_idle, (w/4,h/3))
-	jumping = pygame.transform.rotate(jumping_idle,0)
+	swiming_idle = pygame.image.load(swiming_file).convert_alpha()
+	swiming_idle = pygame.transform.scale(swiming_idle, (w/4,h/3))
+
+	scene = random.choice(["BUNNY","DORY"])
+	random_scene = True
+	if scene == "BUNNY":
+		jumping = pygame.transform.rotate(jumping_idle,0)
+	else:
+		jumping = pygame.transform.rotate(swiming_idle,0)
 
 	while 1:
 		if not end:
@@ -295,50 +341,92 @@ if __name__ == '__main__':
 				if anim == anim_limit:
 					dead = 0
 				pygame.time.wait(100)
-				if fliped:
-					jumping = pygame.transform.rotate(jumping_idle,6*anim-120)
+				if scene == "BUNNY":
+					if fliped:
+						jumping = pygame.transform.rotate(jumping_idle,6*anim-120)
+					else:
+						jumping = pygame.transform.rotate(jumping_idle,100-5*anim)
 				else:
-					jumping = pygame.transform.rotate(jumping_idle,100-5*anim)
+					if fliped:
+						jumping = pygame.transform.rotate(swiming_idle,15+30*math.sin(anim/2.0))
+					else:
+						jumping = pygame.transform.rotate(swiming_idle,30*math.sin(anim/2.0))
 				update_view()
 			else:
 				pygame.time.wait(10)
 				dead = dead + 1
 				if dead == dead_limit:
-					jumping_pos = random.randrange(0,int(w/2))
-					if random.choice([True,False]):
+					jumping_pos = random.randrange(0,int(w/3))
+					if scene == "BUNNY":
+						if random.choice([True,False]):
+							fliped = not fliped
+							jumping_idle = pygame.transform.flip(jumping_idle,True,False)
+							swiming_idle = pygame.transform.flip(swiming_idle,True,False)
+					else:
 						fliped = not fliped
 						jumping_idle = pygame.transform.flip(jumping_idle,True,False)
+						swiming_idle = pygame.transform.flip(swiming_idle,True,False)
 					anim = 1
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT: sys.exit()
-			elif event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_ESCAPE:
+			elif event.type == pygame.MOUSEBUTTONUP:
+				if event.button == mouse_diff_up:
+					if anim > anim_limit:
+						difficulty = difficulty +1
+						top = int(math.pow(2, difficulty))-1
+						restart()
+						anim = anim_limit + 1
+						update_view()
+				elif event.button == mouse_diff_dw:
+					if anim > anim_limit:
+						if (difficulty > 1):
+							difficulty = difficulty -1
+							top = int(math.pow(2, difficulty))-1
+							restart()
+							anim = anim_limit + 1
+							update_view()
+				elif event.button == mouse_quit:
 					sys.exit()
-				elif event.key == pygame.K_DELETE:
+				elif event.button == mouse_clue:
+					message(clue + str(medio),(255,255,255))
+			elif event.type == pygame.KEYDOWN:
+				if event.key == key_quit:
+					sys.exit()
+				elif event.key == key_rst:
+					if (random_scene):
+						scene = random.choice(["BUNNY","DORY"])
 					restart()
 					update_view()
 				elif (not end):
-					if event.key == pygame.K_1:
+					if event.key == pygame.K_r:
+						random_scene = not random_scene
+					elif event.key == pygame.K_d:
+						scene = "DORY"
+						update_view()
+					elif event.key == pygame.K_c:
+						scene = "BUNNY"
+						update_view()
+					elif event.key == pygame.K_1 or event.key == pygame.K_KP1:
 						update_input("1")
-					elif event.key == pygame.K_2:
+					elif event.key == pygame.K_2 or event.key == pygame.K_KP2:
 						update_input("2")
-					elif event.key == pygame.K_3:
+					elif event.key == pygame.K_3 or event.key == pygame.K_KP3:
 						update_input("3")
-					elif event.key == pygame.K_4:
+					elif event.key == pygame.K_4 or event.key == pygame.K_KP4:
 						update_input("4")
-					elif event.key == pygame.K_5:
+					elif event.key == pygame.K_5 or event.key == pygame.K_KP5:
 						update_input("5")
-					elif event.key == pygame.K_6:
+					elif event.key == pygame.K_6 or event.key == pygame.K_KP6:
 						update_input("6")
-					elif event.key == pygame.K_7:
+					elif event.key == pygame.K_7 or event.key == pygame.K_KP7:
 						update_input("7")
-					elif event.key == pygame.K_8:
+					elif event.key == pygame.K_8 or event.key == pygame.K_KP8:
 						update_input("8")
-					elif event.key == pygame.K_9:
+					elif event.key == pygame.K_9 or event.key == pygame.K_KP9:
 						update_input("9")
-					elif event.key == pygame.K_0:
+					elif event.key == pygame.K_0 or event.key == pygame.K_KP0:
 						update_input("0")
-					elif event.key == pygame.K_RETURN:
+					elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
 						if anim <= anim_limit:
 							restart()
 							anim = anim_limit + 1
@@ -349,14 +437,14 @@ if __name__ == '__main__':
 							enter()
 					elif event.key == pygame.K_BACKSPACE:
 						back()
-					elif event.key == pygame.K_KP_PLUS:
+					elif event.key == key_diff_up:
 						if anim > anim_limit:
 							difficulty = difficulty +1
 							top = int(math.pow(2, difficulty))-1
 							restart()
 							anim = anim_limit + 1
 							update_view()
-					elif event.key == pygame.K_KP_MINUS:
+					elif event.key == key_diff_dw:
 						if anim > anim_limit:
 							if (difficulty > 1):
 								difficulty = difficulty -1
@@ -364,5 +452,5 @@ if __name__ == '__main__':
 								restart()
 								anim = anim_limit + 1
 								update_view()
-					elif event.key == pygame.K_KP_ENTER:
+					elif event.key == key_clue:
 						message(clue + str(medio),(255,255,255))
